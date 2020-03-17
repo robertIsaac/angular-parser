@@ -13,7 +13,11 @@ export class AppController {
   }
 
   @Get('parse')
-  parse(@Query('site') site: string) {
-    return this.appService.parseSite(site);
+  @Render('parse.hbs')
+  async parse(@Query('site') site: string) {
+    const endpoints = await this.appService.parseSite(site);
+    return {
+      endpoints
+    };
   }
 }

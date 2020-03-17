@@ -1,0 +1,18 @@
+{{> head}}
+<table>
+    <thead>
+    <tr>
+        <th>method</th>
+        <th>parameters</th>
+    </tr>
+    </thead>
+    <thead>
+    {{#each endpoints}}
+        <tr>
+            <td>{{this.method}}</td>
+            <td>{{this.parameters}}</td>
+        </tr>
+    {{/each}}
+    </thead>
+</table>
+{{> foot}}
