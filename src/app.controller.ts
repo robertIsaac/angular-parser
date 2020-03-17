@@ -1,4 +1,4 @@
-import { Controller, Get, Render } from '@nestjs/common';
+import { Controller, Get, Query, Render } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -13,7 +13,7 @@ export class AppController {
   }
 
   @Get('parse')
-  parse() {
-    return 'TODO';
+  parse(@Query('site') site: string) {
+    return this.appService.parseSite(site);
   }
 }
