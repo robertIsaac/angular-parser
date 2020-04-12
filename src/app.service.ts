@@ -15,6 +15,8 @@ export class AppService {
   async parseSite(site: string): Promise<Endpoint[]> {
     this.site = site;
     const endpoints: Endpoint[] = [];
+
+    // find inside main
     const main = await this.getScript(/main.*\.js/);
     const mainUrl = this.getFullUrl(main);
     const mainCode = await this.getData(mainUrl);
@@ -22,6 +24,8 @@ export class AppService {
     for (const endpoint of allEndpoints) {
       endpoints.push({method: endpoint[2], parameters: endpoint[3]});
     }
+
+    // get lazy loaded modules
     const runtime = await this.getScript(/runtime.*\.js/);
     const runtimeUrl = this.getFullUrl(runtime);
     const runtimeCode = await this.getData(runtimeUrl);
@@ -30,13 +34,20 @@ export class AppService {
       const prefix = modulesCode[1];
       let hashes = `hashes=${modulesCode[2]}`;
       hashes += `;`;
-      console.log(hashes);
       eval(hashes);
+
+      let modulesNames = runtimeCode.match(/{0:"common".*?}/)[0];
+      modulesNames = `modulesNames=${modulesNames};`
+      eval(modulesNames);
+
       const modules = [];
       for (const key of Object.keys(hashes)) {
         const hash = hashes[key];
-        modules.push(`${key}${prefix}${hash}.js`);
+        const name = modulesNames[key] ?? key;
+        modules.push(`${name}${prefix}${hash}.js`);
       }
+
+      // find inside lazy loaded modules
       for (const module of modules) {
         const moduleUrl = this.getFullUrl(module);
         const moduleCode = await this.getData(moduleUrl);
@@ -46,6 +57,7 @@ export class AppService {
         }
       }
     }
+
     return endpoints;
   }
 
