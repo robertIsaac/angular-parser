@@ -99,10 +99,12 @@ export class AppService {
 
   private async parseScript(script: string) {
     const scriptUrl = this.getFullUrl(script);
+    const array = scriptUrl.split('/');
+    const scriptName = array[array.length - 1].split('.')[0]
     const scriptCode = await this.getData(scriptUrl);
     const allEndpoints = scriptCode.matchAll(/this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g);
     for (const endpoint of allEndpoints) {
-      this.endpoints.push({method: endpoint[2], parameters: endpoint[3]});
+      this.endpoints.push({method: endpoint[2], parameters: endpoint[3], scriptUrl, scriptName});
     }
   }
 }
