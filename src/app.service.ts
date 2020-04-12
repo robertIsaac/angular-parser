@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Endpoint } from "./interfaces/endpoint";
 import jsdom = require("jsdom");
 import https = require('https');
+import http = require('http');
 
 const {JSDOM} = jsdom;
 
@@ -70,9 +71,15 @@ export class AppService {
     }
   }
 
-  private getData(url): Promise<string> {
+  private getData(url: string): Promise<string> {
+    let module;
+    if (url.startsWith('https')) {
+      module = https;
+    } else {
+      module = http;
+    }
     return new Promise(resolve => {
-      https.get(url, res => {
+      module.get(url, res => {
         let data = '';
 
         res.on('data', (chunk) => {
