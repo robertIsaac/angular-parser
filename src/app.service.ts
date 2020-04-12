@@ -16,6 +16,8 @@ export class AppService {
 
   async parseSite(site: string): Promise<Endpoint[]> {
     this.site = site;
+    const data = await this.getData(this.site);
+    this.dom = new JSDOM(data);
     this.endpoints = [];
 
     // find inside main
@@ -60,10 +62,6 @@ export class AppService {
   }
 
   private async getScript(name: RegExp): Promise<string> {
-    if (!this.dom) {
-      const data = await this.getData(this.site);
-      this.dom = new JSDOM(data);
-    }
     const scripts = this.dom.window.document.querySelectorAll("script");
     for (const script of scripts) {
       if (script.src.search(name) !== -1) {
