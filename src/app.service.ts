@@ -9,25 +9,24 @@ const {JSDOM} = jsdom;
 @Injectable()
 export class AppService {
 
-  dom: any;
+  private dom: any;
   private site: string;
   private prefix: string;
+  private endpoints: Endpoint[] = [];
 
   async parseSite(site: string): Promise<Endpoint[]> {
     this.site = site;
-    const endpoints: Endpoint[] = [];
+    this.endpoints = [];
 
     // find inside main
     const main = await this.getScript(/main.*\.js/);
     if (main.startsWith('http')) {
       this.prefix = main.split('/main')[0];
+    } else {
+      this.prefix = null;
     }
-    const mainUrl = this.getFullUrl(main);
-    const mainCode = await this.getData(mainUrl);
-    const allEndpoints = mainCode.matchAll(/this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g);
-    for (const endpoint of allEndpoints) {
-      endpoints.push({method: endpoint[2], parameters: endpoint[3]});
-    }
+
+    await this.parseScript(main);
 
     // get lazy loaded modules
     const runtime = await this.getScript(/runtime.*\.js/);
@@ -53,19 +52,14 @@ export class AppService {
 
       // find inside lazy loaded modules
       for (const module of modules) {
-        const moduleUrl = this.getFullUrl(module);
-        const moduleCode = await this.getData(moduleUrl);
-        const allEndpoints = moduleCode.matchAll(/this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g);
-        for (const endpoint of allEndpoints) {
-          endpoints.push({method: endpoint[2], parameters: endpoint[3]});
-        }
+        await this.parseScript(module);
       }
     }
 
-    return endpoints;
+    return this.endpoints;
   }
 
-  async getScript(name: RegExp): Promise<string> {
+  private async getScript(name: RegExp): Promise<string> {
     if (!this.dom) {
       const data = await this.getData(this.site);
       this.dom = new JSDOM(data);
@@ -78,7 +72,7 @@ export class AppService {
     }
   }
 
-  getData(url): Promise<string> {
+  private getData(url): Promise<string> {
     return new Promise(resolve => {
       https.get(url, res => {
         let data = '';
@@ -97,11 +91,18 @@ export class AppService {
 
   private getFullUrl(url: string) {
     if (url.startsWith('http')) {
-      console.log(url);
       return url;
     } else {
-      console.log(`${this.prefix ?? this.site}/${url}`);
       return `${this.prefix ?? this.site}/${url}`;
+    }
+  }
+
+  private async parseScript(script: string) {
+    const scriptUrl = this.getFullUrl(script);
+    const scriptCode = await this.getData(scriptUrl);
+    const allEndpoints = scriptCode.matchAll(/this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g);
+    for (const endpoint of allEndpoints) {
+      this.endpoints.push({method: endpoint[2], parameters: endpoint[3]});
     }
   }
 }
