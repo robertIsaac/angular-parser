@@ -88,7 +88,7 @@ export class AppService {
   }
 
   private getFullUrl(url: string) {
-    if (url.startsWith('http')) {
+    if (url?.startsWith('http')) {
       return url;
     } else {
       return `${this.prefix ?? this.site}/${url}`;
