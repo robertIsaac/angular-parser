@@ -11,6 +11,7 @@ export class AppService {
 
   dom: any;
   private site: string;
+  private prefix: string;
 
   async parseSite(site: string): Promise<Endpoint[]> {
     this.site = site;
@@ -18,6 +19,9 @@ export class AppService {
 
     // find inside main
     const main = await this.getScript(/main.*\.js/);
+    if (main.startsWith('http')) {
+      this.prefix = main.split('/main')[0];
+    }
     const mainUrl = this.getFullUrl(main);
     const mainCode = await this.getData(mainUrl);
     const allEndpoints = mainCode.matchAll(/this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g);
@@ -91,11 +95,13 @@ export class AppService {
     });
   }
 
-  private getFullUrl(main: string) {
-    if (main.startsWith('http')) {
-      return main;
+  private getFullUrl(url: string) {
+    if (url.startsWith('http')) {
+      console.log(url);
+      return url;
     } else {
-      return `${this.site}/${main}`;
+      console.log(`${this.prefix ?? this.site}/${url}`);
+      return `${this.prefix ?? this.site}/${url}`;
     }
   }
 }
