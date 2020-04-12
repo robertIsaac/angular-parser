@@ -18,6 +18,9 @@ export class AppService {
   async parseSite(site: string): Promise<Endpoint[]> {
     this.site = site;
     const data = await this.getData(this.site);
+    if (!data) {
+      return [];
+    }
     this.dom = new JSDOM(data);
     this.endpoints = [];
 
@@ -75,8 +78,10 @@ export class AppService {
     let module;
     if (url.startsWith('https')) {
       module = https;
-    } else {
+    } else if (url.startsWith('http')) {
       module = http;
+    } else {
+      return;
     }
     return new Promise(resolve => {
       module.get(url, res => {

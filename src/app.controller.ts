@@ -15,6 +15,9 @@ export class AppController {
   @Get('parse')
   @Render('parse.hbs')
   async parse(@Query('site') site: string) {
+    if (!site) {
+      return {endpoints: []};
+    }
     const endpoints = await this.appService.parseSite(site);
     return {
       endpoints
