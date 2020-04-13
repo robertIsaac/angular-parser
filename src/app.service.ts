@@ -45,7 +45,7 @@ export class AppService {
       hashes += `;`;
       eval(hashes);
 
-      let modulesNames = runtimeCode.match(/{0:"common".*?}/)[0];
+      let modulesNames = runtimeCode.match(/{\d+:"common".*?}/)[0];
       modulesNames = `modulesNames=${modulesNames};`
       eval(modulesNames);
 
@@ -101,8 +101,10 @@ export class AppService {
 
   private getFullUrl(url: string) {
     if (url?.startsWith('http')) {
+      console.log(url);
       return url;
     } else {
+      console.log(`${this.prefix ?? this.site}/${url}`);
       return `${this.prefix ?? this.site}/${url}`;
     }
   }
