@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Render } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Query, Render } from "@nestjs/common";
+import { AppService } from "./app.service";
 
 @Controller()
 export class AppController {
@@ -7,7 +7,7 @@ export class AppController {
   }
 
   @Get()
-  @Render('index.hbs')
+  @Render("index.hbs")
   root() {
     return;
   }
@@ -16,7 +16,7 @@ export class AppController {
   @Render('parse.hbs')
   async parse(@Query('site') site: string) {
     if (!site) {
-      return {endpoints: []};
+      return { endpoints: [] };
     }
     const endpoints = await this.appService.parseSite(site);
     return {

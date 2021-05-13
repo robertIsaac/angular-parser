@@ -1,15 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 import { Endpoint } from "./interfaces/endpoint";
 import jsdom = require("jsdom");
-import https = require('https');
-import http = require('http');
+import https = require("https");
+import http = require("http");
 
-const {JSDOM} = jsdom;
-
+const { JSDOM } = jsdom;
 
 @Injectable()
 export class AppService {
-
   private dom: any;
   private site: string;
   private prefix: string;
@@ -46,7 +44,7 @@ export class AppService {
       eval(hashes);
 
       let modulesNames = runtimeCode.match(/{\d+:"common".*?}/)[0];
-      modulesNames = `modulesNames=${modulesNames};`
+      modulesNames = `modulesNames=${modulesNames};`;
       eval(modulesNames);
 
       const modules = [];
@@ -87,14 +85,13 @@ export class AppService {
       module.get(url, res => {
         let data = '';
 
-        res.on('data', (chunk) => {
+        res.on("data", chunk => {
           data += chunk;
         });
 
         res.on('end', () => {
           resolve(data);
         });
-
       });
     });
   }
@@ -111,12 +108,19 @@ export class AppService {
 
   private async parseScript(script: string) {
     const scriptUrl = this.getFullUrl(script);
-    const array = scriptUrl.split('/');
-    const scriptName = array[array.length - 1].split('.')[0]
+    const array = scriptUrl.split("/");
+    const scriptName = array[array.length - 1].split(".")[0];
     const scriptCode = await this.getData(scriptUrl);
-    const allEndpoints = scriptCode.matchAll(/this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g);
+    const allEndpoints = scriptCode.matchAll(
+      /this\.http(Client)?\.(.+?)\((.*?)\)[;.}]/g
+    );
     for (const endpoint of allEndpoints) {
-      this.endpoints.push({method: endpoint[2], parameters: endpoint[3], scriptUrl, scriptName});
+      this.endpoints.push({
+        method: endpoint[2],
+        parameters: endpoint[3],
+        scriptUrl,
+        scriptName
+      });
     }
   }
 }
